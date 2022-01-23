@@ -1,6 +1,11 @@
 export const TILE_SIZE = 256;
 export const MAP_SIZE = [24000, 20000];
 
+/* Change the following constant to select between localhost and zeldamods */
+export const GAME_FILES_LOCAL = false;
+
+export const GAME_FILES = `${GAME_FILES_LOCAL ? "" : "https://objmap.zeldamods.org"}/game_files`
+
 export type Point = [number, number, number];
 
 export function isValidXYZ(x: number, y: number, z: number) {
