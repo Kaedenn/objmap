@@ -1,12 +1,11 @@
 <template>
 <div class="flex-fill" :class="'zoom-level-'+zoom">
-  <!--
-  <div class="banner" v-show="!settings.decompBannerHidden">
+  <!-- The following isn't displayed if the user passed ?terse=1 -->
+  <div class="banner" v-show="!terseMode() && !settings.decompBannerHidden">
     Help us understand the BotW engine! <a href="https://github.com/zeldaret/botw" target="_blank">Contribute to the decompilation project now</a>
 
     <button type="button" aria-label="Close" class="close" @click="settings.decompBannerHidden = true">×</button>
   </div>
-  -->
 
   <div id="lmap" class="h-100"></div>
 
@@ -95,13 +94,17 @@
         <div class="search-header">
           <input type="search" class="form-control search-main-input" placeholder="Search" @input="searchOnInput" v-model="searchQuery">
           <div class="d-flex justify-content-end">
+            <!-- Button to clear the search input and search results -->
             <b-btn size="sm" variant="link" @click="clearSearch()"
               v-b-tooltip.hover title="Clear search results">Clear</b-btn>
+            <!-- Button to show the help pane -->
             <b-btn size="sm" variant="link" @click="switchPane('spane-search-help')">Help</b-btn>
+            <!-- Standard search preset dropdowns -->
             <b-dropdown v-for="presetGroup in searchPresets" :key="presetGroup.label" size="sm" variant="link">
               <template slot="button-content"><span v-html="presetGroup.label"></span></template>
               <b-dd-item v-for="preset in presetGroup.presets" :key="preset.label" @click="searchAddGroup(preset.query, preset.label)">{{preset.label}}</b-dd-item>
             </b-dropdown>
+            <!-- Custom search presets dropdown -->
             <b-dropdown size="sm" variant="link" text="Custom" v-if="settings && settings.customSearchPresets.length">
               <b-dd-item v-for="preset in settings.customSearchPresets" :key="preset[0]" @click="searchAddGroup(preset[1], preset[0])">{{preset[0]}}</b-dd-item>
             </b-dropdown>
@@ -114,7 +117,9 @@
         <!-- Current search groups -->
         <section class="search-groups" v-show="searchGroups.length || searchExcludedSets.length">
           <div class="search-group d-flex align-items-center" v-for="(group, idx) in searchGroups" :key="'searchgroup' + idx">
+            <!-- Enable or disable the group -->
             <b-form-checkbox class="ml-2 d-inline-block search-enable-checkbox" v-model="group.enabled" @change="searchToggleGroupEnabledStatus(idx)"></b-form-checkbox>
+            <!-- Group label, count, remove button, and edit button -->
             <span class="d-inline-block">
               <span>{{group.label}}</span>
               <a class="ml-2" @click="searchRemoveGroup(idx)"><i class="text-danger fa fa-times"></i></a>
@@ -122,6 +127,7 @@
               <span class="ml-2">({{group.size()}})</span>
             </span>
           </div>
+          <!-- Hidden feedback -->
           <div class="search-group" v-for="(set, idx) in searchExcludedSets" :key="'searchexclude' + idx">
             <div v-if="!set.hidden">[Hidden] {{set.label}} <a @click="searchRemoveExcludeSet(idx)"><i class="text-danger fa fa-times"></i></a> ({{set.size()}})</div>
           </div>
@@ -131,8 +137,10 @@
         <section class="search-results">
           <p class="text-center mb-3 h5" v-show="searchQuery && !searching && !searchResults.length">No results.</p>
           <p class="text-center" v-show="!searching && searchLastSearchFailed">Could not understand search query.</p>
-          <p class="text-center" v-show="!searching && searchLastSearchFailed">Hint: If your query contains <code>'</code>, try putting the whole query in quotes (e.g. <code>"traveler's shield"</code>)</p>
+          <!-- The following won't display if the user passed ?terse=1 -->
+          <p class="text-center" v-show="!terseMode() && !searching && searchLastSearchFailed">Hint: If your query contains <code>'</code>, try putting the whole query in quotes (e.g. <code>"traveler's shield"</code>)</p>
 
+          <!-- Each search result -->
           <div v-show="searchResults.length">
             <p class="text-center mb-1">
               <span v-show="this.searchResults.length >= this.MAX_SEARCH_RESULT_COUNT">Showing only the first {{MAX_SEARCH_RESULT_COUNT}} results.<br></span>
