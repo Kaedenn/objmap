@@ -96,6 +96,7 @@ export class MapMgr {
   getObjByObjId(objid: number): Promise<ObjectData | null> {
     return fetch(`${RADAR_URL}/obj/${objid}`).then(parse);
   }
+
   getObj(mapType: string, mapName: string, hashId: number): Promise<ObjectData | null> {
     return fetch(`${RADAR_URL}/obj/${mapType}/${mapName}/${hashId}`).then(parse);
   }
