@@ -149,6 +149,7 @@ class LayerProps {
     this.pathLength = feat.properties.pathLength || 0;
   }
 }
+
 function addGeoJSONFeatureToLayer(layer: any) {
   if (!layer.feature) {
     layer.feature = { type: 'Feature' };
@@ -157,8 +158,6 @@ function addGeoJSONFeatureToLayer(layer: any) {
     layer.feature.properties = new LayerProps();
   }
 }
-
-
 
 function layerSetTooltip(layer: L.Marker | L.Polyline) {
   if (layer.feature) {
@@ -195,7 +194,6 @@ function addPopupAndTooltip(layer: L.Marker | L.Polyline) {
     layer.bindTooltip(layer.feature.properties.tooltip());
   }
 }
-
 
 @Component({
   components: {
@@ -283,6 +281,7 @@ export default class AppMap extends mixins(MixinUtil) {
 
     this.map.setView([x, 0, z], zoom);
   }
+
   updateRoute() {
     this.updatingRoute = true;
     // @ts-ignore
@@ -742,6 +741,11 @@ export default class AppMap extends mixins(MixinUtil) {
     });
   }
 
+  clearSearch() {
+    this.searchQuery = '';
+    this.search();
+  }
+
   searchGetQuery() {
     let query = this.searchQuery;
     if (/^0x[0-9A-Fa-f]{6}/g.test(query))
@@ -969,6 +973,7 @@ export default class AppMap extends mixins(MixinUtil) {
   initAreaMap() {
     this.areaMapLayer.data.addTo(this.map.m);
   }
+
   initAutoItem() {
     this.areaAutoItem.data.addTo(this.map.m);
   }
@@ -982,7 +987,6 @@ export default class AppMap extends mixins(MixinUtil) {
     layers.forEach(l => this.areaAutoItem.data.addLayer(l));
     this.areaAutoItem.data.setZIndex(1000);
   }
-
 
   async loadAreaMap(name: string) {
     this.areaMapLayer.data.clearLayers();
@@ -1033,6 +1037,7 @@ export default class AppMap extends mixins(MixinUtil) {
   onShownAreaMapChanged() {
     this.$nextTick(() => this.loadAreaMap(this.shownAreaMap));
   }
+
   onShownAutoItemChanged() {
     this.$nextTick(() => this.loadAutoItem(this.shownAutoItem));
   }
@@ -1132,4 +1137,5 @@ export default class AppMap extends mixins(MixinUtil) {
       this.setViewFromRoute(to);
     next();
   }
+
 }

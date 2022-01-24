@@ -1,6 +1,8 @@
 <template>
   <div :class="className + (isStatic ? ' static' : '')">
-    <section class="search-result-name">{{name(true)}}</section>
+    <section class="search-result-name">
+      {{name(true)}}
+    </section>
     <section class="search-result-location">
       <i class="fa fa-map-marker-alt fa-fw"></i>
       {{getMapNameForObj(data)}} {{getMapStaticStringForObj(data)}}
@@ -11,8 +13,12 @@
       <span v-if="!withPermalink">{{formatObjId(data.hash_id)}}</span>
       <span style="color: #ff3915" v-if="data.hard_mode"> Master Mode</span>
     </section>
-    <section class="search-result-drop" v-if="!dropAsName && data.drop"><i class="fa fa-gem fa-fw"></i> {{drop()}}</section>
-    <section class="search-result-equip" v-if="data.equip"><i class="fa fa-shield-alt fa-fw"></i> {{data.equip.map((x) => getName(x)).join(', ')}}</section>
+    <section class="search-result-drop" v-if="!dropAsName && data.drop">
+      <i class="fa fa-gem fa-fw"></i> {{drop()}}
+    </section>
+    <section class="search-result-equip" v-if="data.equip">
+      <i class="fa fa-shield-alt fa-fw"></i> {{data.equip.map((x) => getName(x)).join(', ')}}
+    </section>
     <section class="search-result-scale" v-if="data.scale === 0">
       <i class="fas fa-fw fa-ban" style="color:tomato"></i>
       {{data.name.includes('Enemy_Giant') ? 'No enemy scaling' : 'No scaling'}}
@@ -39,7 +45,9 @@
       <span v-if="data.sharp_weapon_judge_type == 3"><i class="fas fa-star fa-fw" style="color: #ffc700"></i> Minimum modifier tier: Yellow</span>
       <span v-if="data.sharp_weapon_judge_type == 4"><i class="far fa-star fa-fw" style="color: tomato"></i> No modifier</span>
     </section>
-    <section class="search-result-link" v-if="link"><i class="fa fa-link fa-fw"></i> Link type: {{link.ltype}}</section>
+    <section class="search-result-link" v-if="link">
+      <i class="fa fa-link fa-fw"></i> Link type: {{link.ltype}}
+    </section>
   </div>
 </template>
 <style lang="less">

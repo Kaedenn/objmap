@@ -1,10 +1,12 @@
 <template>
 <div class="flex-fill" :class="'zoom-level-'+zoom">
+  <!--
   <div class="banner" v-show="!settings.decompBannerHidden">
     Help us understand the BotW engine! <a href="https://github.com/zeldaret/botw" target="_blank">Contribute to the decompilation project now</a>
 
     <button type="button" aria-label="Close" class="close" @click="settings.decompBannerHidden = true">×</button>
   </div>
+  -->
 
   <div id="lmap" class="h-100"></div>
 
@@ -30,6 +32,7 @@
     </div>
     <div class="leaflet-sidebar-content" id="sidebar-content">
 
+      <!-- ------------------------- Help Pane   ------------------------- -->
       <div class="leaflet-sidebar-pane" id="spane-search-help">
         <h1 class="leaflet-sidebar-header">Help</h1>
 
@@ -85,54 +88,63 @@
         <b-btn block size="sm" variant="primary" @click="switchPane('spane-search')"><i class="fa fa-chevron-left"></i> Back</b-btn>
       </div>
 
+      <!-- ------------------------- Search Pane ------------------------- -->
       <div class="leaflet-sidebar-pane" id="spane-search">
-          <div class="search-header">
-            <input type="search" class="form-control search-main-input" placeholder="Search" @input="searchOnInput" v-model="searchQuery">
-            <div class="d-flex justify-content-end">
-              <b-btn size="sm" variant="link" @click="switchPane('spane-search-help')">Help</b-btn>
-              <b-dropdown v-for="presetGroup in searchPresets" :key="presetGroup.label" size="sm" variant="link">
-                <template slot="button-content"><span v-html="presetGroup.label"></span></template>
-                <b-dd-item v-for="preset in presetGroup.presets" :key="preset.label" @click="searchAddGroup(preset.query, preset.label)">{{preset.label}}</b-dd-item>
-              </b-dropdown>
-              <b-dropdown size="sm" variant="link" text="Custom" v-if="settings && settings.customSearchPresets.length">
-                <b-dd-item v-for="preset in settings.customSearchPresets" :key="preset[0]" @click="searchAddGroup(preset[1], preset[0])">{{preset[0]}}</b-dd-item>
-              </b-dropdown>
-            </div>
+
+        <!-- Sidebar header and presets -->
+        <div class="search-header">
+          <input type="search" class="form-control search-main-input" placeholder="Search" @input="searchOnInput" v-model="searchQuery">
+          <div class="d-flex justify-content-end">
+            <b-btn size="sm" variant="link" @click="clearSearch()"
+              v-b-tooltip.hover title="Clear search results">Clear</b-btn>
+            <b-btn size="sm" variant="link" @click="switchPane('spane-search-help')">Help</b-btn>
+            <b-dropdown v-for="presetGroup in searchPresets" :key="presetGroup.label" size="sm" variant="link">
+              <template slot="button-content"><span v-html="presetGroup.label"></span></template>
+              <b-dd-item v-for="preset in presetGroup.presets" :key="preset.label" @click="searchAddGroup(preset.query, preset.label)">{{preset.label}}</b-dd-item>
+            </b-dropdown>
+            <b-dropdown size="sm" variant="link" text="Custom" v-if="settings && settings.customSearchPresets.length">
+              <b-dd-item v-for="preset in settings.customSearchPresets" :key="preset[0]" @click="searchAddGroup(preset[1], preset[0])">{{preset[0]}}</b-dd-item>
+            </b-dropdown>
           </div>
+        </div>
 
-          <p class="text-center" v-show="settings.mapType !== 'MainField'">Searching map: {{settings.mapType}} {{settings.mapName}}</p>
+        <!-- Map indicator (if not MainField) -->
+        <p class="text-center" v-show="settings.mapType !== 'MainField'">Searching map: {{settings.mapType}} {{settings.mapName}}</p>
 
-          <section class="search-groups" v-show="searchGroups.length || searchExcludedSets.length">
-            <div class="search-group d-flex align-items-center" v-for="(group, idx) in searchGroups" :key="'searchgroup' + idx">
-              <b-form-checkbox class="ml-2 d-inline-block search-enable-checkbox" v-model="group.enabled" @change="searchToggleGroupEnabledStatus(idx)"></b-form-checkbox>
-              <span class="d-inline-block">
-                <span>{{group.label}}</span>
-                <a class="ml-2" @click="searchRemoveGroup(idx)"><i class="text-danger fa fa-times"></i></a>
-                <a class="ml-2" style="font-size: 90%" v-if="group.query" @click="searchViewGroup(idx)"><i class="fa fa-edit"></i></a>
-                <span class="ml-2">({{group.size()}})</span>
-              </span>
-            </div>
-            <div class="search-group" v-for="(set, idx) in searchExcludedSets" :key="'searchexclude' + idx">
-              <div v-if="!set.hidden">[Hidden] {{set.label}} <a @click="searchRemoveExcludeSet(idx)"><i class="text-danger fa fa-times"></i></a> ({{set.size()}})</div>
-            </div>
-          </section>
+        <!-- Current search groups -->
+        <section class="search-groups" v-show="searchGroups.length || searchExcludedSets.length">
+          <div class="search-group d-flex align-items-center" v-for="(group, idx) in searchGroups" :key="'searchgroup' + idx">
+            <b-form-checkbox class="ml-2 d-inline-block search-enable-checkbox" v-model="group.enabled" @change="searchToggleGroupEnabledStatus(idx)"></b-form-checkbox>
+            <span class="d-inline-block">
+              <span>{{group.label}}</span>
+              <a class="ml-2" @click="searchRemoveGroup(idx)"><i class="text-danger fa fa-times"></i></a>
+              <a class="ml-2" style="font-size: 90%" v-if="group.query" @click="searchViewGroup(idx)"><i class="fa fa-edit"></i></a>
+              <span class="ml-2">({{group.size()}})</span>
+            </span>
+          </div>
+          <div class="search-group" v-for="(set, idx) in searchExcludedSets" :key="'searchexclude' + idx">
+            <div v-if="!set.hidden">[Hidden] {{set.label}} <a @click="searchRemoveExcludeSet(idx)"><i class="text-danger fa fa-times"></i></a> ({{set.size()}})</div>
+          </div>
+        </section>
 
-          <section class="search-results">
-            <p class="text-center mb-3 h5" v-show="searchQuery && !searching && !searchResults.length">No results.</p>
-            <p class="text-center" v-show="!searching && searchLastSearchFailed">Could not understand search query.</p>
-            <p class="text-center" v-show="!searching && searchLastSearchFailed">Hint: If your query contains <code>'</code>, try putting the whole query in quotes (e.g. <code>"traveler's shield"</code>)</p>
+        <!-- Results for the current search -->
+        <section class="search-results">
+          <p class="text-center mb-3 h5" v-show="searchQuery && !searching && !searchResults.length">No results.</p>
+          <p class="text-center" v-show="!searching && searchLastSearchFailed">Could not understand search query.</p>
+          <p class="text-center" v-show="!searching && searchLastSearchFailed">Hint: If your query contains <code>'</code>, try putting the whole query in quotes (e.g. <code>"traveler's shield"</code>)</p>
 
-            <div v-show="searchResults.length">
-              <p class="text-center mb-1">
-                <span v-show="this.searchResults.length >= this.MAX_SEARCH_RESULT_COUNT">Showing only the first {{MAX_SEARCH_RESULT_COUNT}} results.<br></span>
-                <b-btn size="sm" variant="link" @click="searchOnAdd"><i class="fa fa-plus"></i> Add to map</b-btn>
-                <b-btn size="sm" variant="link" @click="searchOnExclude"><i class="far fa-eye-slash"></i> Hide</b-btn>
-              </p>
-              <ObjectInfo v-for="(result, idx) in searchResults" :obj="result" :is-static="false" :key="result.objid" @click.native="searchJumpToResult(idx)" />
-            </div>
-          </section>
+          <div v-show="searchResults.length">
+            <p class="text-center mb-1">
+              <span v-show="this.searchResults.length >= this.MAX_SEARCH_RESULT_COUNT">Showing only the first {{MAX_SEARCH_RESULT_COUNT}} results.<br></span>
+              <b-btn size="sm" variant="link" @click="searchOnAdd"><i class="fa fa-plus"></i> Add to map</b-btn>
+              <b-btn size="sm" variant="link" @click="searchOnExclude"><i class="far fa-eye-slash"></i> Hide</b-btn>
+            </p>
+            <ObjectInfo v-for="(result, idx) in searchResults" :obj="result" :is-static="false" :key="result.objid" @click.native="searchJumpToResult(idx)" />
+          </div>
+        </section>
       </div>
 
+      <!-- ------------------------- Filter Pane ------------------------- -->
       <div class="leaflet-sidebar-pane" id="spane-filter">
         <h1 class="leaflet-sidebar-header">Filter</h1>
         <div class="row">
@@ -168,6 +180,7 @@
         </b-radio-group>
       </div>
 
+      <!-- ------------------------- Draw Pane   ------------------------- -->
       <div class="leaflet-sidebar-pane" id="spane-draw">
         <h1 class="leaflet-sidebar-header">Draw</h1>
         <b-btn size="sm" block variant="primary" @click="toggleDraw()"><i class="fa fa-draw-polygon"></i> Toggle draw controls</b-btn>
@@ -189,6 +202,7 @@
         <input type="file" id="fileinput" accept=".json" hidden @change="drawImportCb">
       </div>
 
+      <!-- ------------------------- Tools Pane  ------------------------- -->
       <div class="leaflet-sidebar-pane" id="spane-tools">
         <h1 class="leaflet-sidebar-header">Tools</h1>
         <b-button size="sm" variant="secondary" block @click="closeSidebar(); $refs.modalGoto.show()">Go to coordinates...</b-button>
@@ -202,11 +216,13 @@
         <p>For technical documentation about <i>Breath of the Wild</i> and mechanic breakdowns, refer to the <a href="https://zeldamods.org/">ZeldaMods wiki</a>.</p>
       </div>
 
+      <!-- ------------------------- Settings Pane   --------------------- -->
       <div class="leaflet-sidebar-pane" id="spane-settings">
         <h1 class="leaflet-sidebar-header">Settings</h1>
         <AppMapSettings/>
       </div>
 
+      <!-- ------------------------- Details Pane ------------------------ -->
       <div class="leaflet-sidebar-pane" id="spane-details">
         <div class="leaflet-sidebar-close" @click="closeSidebar()"><i class="fa fa-times"></i></div>
         <h1 v-if="detailsMarker" class="location-title leaflet-sidebar-header" :title="detailsMarker.data.title"><span>{{detailsMarker.data.title}}</span></h1>
