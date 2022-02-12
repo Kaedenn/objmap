@@ -82,6 +82,17 @@ export const SEARCH_PRESETS: ReadonlyArray<SearchPresetGroup> = Object.freeze([
     ]
   },
   {
+    label: '<i class="fa fa-trophy"></i>',
+    presets: [
+      {label: 'Treasure Spots', query: 'actor:TreasureSpot_* NOT drop:RuinGuardian'},
+      {label: 'Guardian Treasure Spots', query: 'actor:TreasureSpot_* drop:RuinGuardian'},
+      {label: 'Ice Walls', query: 'actor:IceWall NOT actor:IceWall_Tower'},
+      {label: 'Breakable Rocks', query: 'actor:Obj_RockBroken_*'},
+      {label: 'Breakable Walls', query: 'actor:WallCrack'},
+      {label: 'Ancient Candles', query: 'actor:TwnObj_AncientCandlePole*'},
+    ]
+  },
+  {
     label: '<i class="fa fa-ellipsis-h"></i>',
     presets: [
       {label: 'Memory Locations', query: 'name:"Memory"'},
@@ -92,17 +103,6 @@ export const SEARCH_PRESETS: ReadonlyArray<SearchPresetGroup> = Object.freeze([
       {label: 'BtB Enemies', query: '(' + makeActorQuery(['Enemy_Bokoblin', 'Enemy_Lizalfos', 'Enemy_Moriblin', 'Enemy_Giant', 'Enemy_Wizzrobe']) + ') NOT actor:bone'},
       {label: 'Launchable Objects', query: makeActorQuery(LAUNCHABLE_OBJS.split('\n'))},
       {label: 'Shrine Elevators', query: 'actor:EntranceElev*'},
-    ]
-  },
-  {
-    label: '<i class="fa fa-trophy"></i>',
-    presets: [
-      {label: 'Treasure Spots', query: 'actor:TreasureSpot_* NOT drop:RuinGuardian'},
-      {label: 'Guardian Treasure Spots', query: 'actor:TreasureSpot_* drop:RuinGuardian'},
-      {label: 'Ice Walls', query: 'actor:IceWall NOT actor:IceWall_Tower'},
-      {label: 'Breakable Rocks', query: 'actor:Obj_RockBroken_*'},
-      {label: 'Breakable Walls', query: 'actor:WallCrack'},
-      {label: 'Ancient Candles', query: 'actor:TwnObj_AncientCandlePole*'},
     ]
   }
 ]);
