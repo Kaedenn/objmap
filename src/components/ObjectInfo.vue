@@ -16,7 +16,7 @@
       <span style="color: #ff3915" v-if="data.hard_mode"><i class="fa fa-shield-alt fa-fw"></i> Master Mode</span>
     </section>
     <section class="search-result-id">
-      <span style="color: #ff3915" v-if="data.one_hit_mode"><i class="fa fa-shield-alt fa-fw"></i> One-hit Obliterator Object</span>
+      <span style="color: #ff3915" v-if="data.one_hit_mode"><i class="fa fa-infinity fa-fw"></i> One-hit Obliterator Object</span>
     </section>
     <section class="search-result-drop" v-if="!dropAsName && data.drop">
       <i class="fa fa-gem fa-fw"></i> {{drop()}}
