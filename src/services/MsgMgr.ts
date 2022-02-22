@@ -2,8 +2,6 @@ import { GAME_FILES } from '@/util/map';
 
 type File = { [label: string]: string };
 
-import { GAME_FILES } from '@/util/map';
-
 export class MsgMgr {
   private static instance: MsgMgr;
   static getInstance() {

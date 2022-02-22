@@ -1,9 +1,6 @@
-
 import { GAME_FILES } from '@/util/map';
 
 const RADAR_URL = 'https://radar.zeldamods.org';
-
-import { GAME_FILES } from '@/util/map';
 
 export type Vec3 = [number, number, number];
 
