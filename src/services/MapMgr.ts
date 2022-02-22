@@ -1,3 +1,6 @@
+
+import { GAME_FILES } from '@/util/map';
+
 const RADAR_URL = 'https://radar.zeldamods.org';
 
 import { GAME_FILES } from '@/util/map';
@@ -77,7 +80,7 @@ export class MapMgr {
 
   async init() {
     await Promise.all([
-      fetch(GAME_FILES + '/map_summary/MainField/static.json').then(r => r.json())
+      fetch(`${GAME_FILES}/map_summary/MainField/static.json`).then(r => r.json())
         .then((d) => {
           d.markers["DungeonDLC"] = d.markers["Dungeon"].filter((l: any) => parseInt(l.SaveFlag.replace('Location_Dungeon', ''), 10) >= 120);
           d.markers["Dungeon"] = d.markers["Dungeon"].filter((l: any) => parseInt(l.SaveFlag.replace('Location_Dungeon', ''), 10) < 120);
