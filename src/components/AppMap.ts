@@ -387,6 +387,10 @@ export default class AppMap extends mixins(MixinUtil) {
       const id: string = e.id;
       this.sidebarActivePane = id;
       el.scrollTop = this.sidebarPaneScrollPos.get(this.sidebarActivePane) || 0;
+      if (id === 'spane-search') {
+        // @ts-ignore
+        document.querySelector('input.search-main-input').focus();
+      }
     });
     this.updateSidebarClass();
     this.updateHylianMode();
