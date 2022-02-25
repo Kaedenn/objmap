@@ -267,19 +267,6 @@ export default class AppMap extends mixins(MixinUtil) {
   // Replace current markers
   private importReplace: boolean = true;
 
-  /* Return query string value (or null) */
-  getQueryValue(key: string) {
-    if (this.$route.query.hasOwnProperty(key)) {
-      return this.$route.query[key];
-    }
-    return null;
-  }
-
-  /* True if query string contains ?terse=1 */
-  terseMode() {
-    return `${this.getQueryValue("terse")}` === "1";
-  }
-
   setViewFromRoute(route: any) {
     const x = parseFloat(route.params.x);
     const z = parseFloat(route.params.z);

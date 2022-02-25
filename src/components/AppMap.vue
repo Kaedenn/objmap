@@ -1,7 +1,6 @@
 <template>
 <div class="flex-fill" :class="'zoom-level-'+zoom">
-  <!-- The following isn't displayed if the user passed ?terse=1 -->
-  <div class="banner" v-show="!terseMode() && !settings.decompBannerHidden">
+  <div class="banner" v-show="!settings.decompBannerHidden">
     Help us understand the BotW engine! <a href="https://github.com/zeldaret/botw" target="_blank">Contribute to the decompilation project now</a>
 
     <button type="button" aria-label="Close" class="close" @click="settings.decompBannerHidden = true">×</button>
@@ -137,8 +136,7 @@
         <section class="search-results">
           <p class="text-center mb-3 h5" v-show="searchQuery && !searching && !searchResults.length">No results.</p>
           <p class="text-center" v-show="!searching && searchLastSearchFailed">Could not understand search query.</p>
-          <!-- The following won't display if the user passed ?terse=1 -->
-          <p class="text-center" v-show="!terseMode() && !searching && searchLastSearchFailed">Hint: If your query contains <code>'</code>, try putting the whole query in quotes (e.g. <code>"traveler's shield"</code>)</p>
+          <p class="text-center" v-show="!searching && searchLastSearchFailed">Hint: If your query contains <code>'</code>, try putting the whole query in quotes (e.g. <code>"traveler's shield"</code>)</p>
 
           <!-- Each search result -->
           <div v-show="searchResults.length">
