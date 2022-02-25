@@ -239,7 +239,7 @@ export default class AppMap extends mixins(MixinUtil) {
   private searchGroups: SearchResultGroup[] = [];
   private searchPresets = SEARCH_PRESETS;
   private searchExcludedSets: SearchExcludeSet[] = [];
-  private readonly MAX_SEARCH_RESULT_COUNT = 2000;
+  private readonly MAX_SEARCH_RESULT_COUNT = process.env.VUE_APP_MAX_SEARCH_RESULT_COUNT;
 
   private hardModeExcludeSet!: SearchExcludeSet;
   private lastBossExcludeSet!: SearchExcludeSet;
