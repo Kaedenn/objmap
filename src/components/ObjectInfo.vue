@@ -18,11 +18,11 @@
     <section class="search-result-oho">
       <span style="color: #ff3915" v-if="data.one_hit_mode"><i class="fa fa-infinity fa-fw"></i> One-Hit Obliterator Object</span>
     </section>
-    <section class="search-result-drop" v-if="!dropAsName && data.drop">
-      <i class="fa fa-gem fa-fw"></i> {{drop()}}
-    </section>
-    <section class="search-result-equip" v-if="data.equip">
-      <i class="fa fa-shield-alt fa-fw"></i> {{data.equip.map((x) => getName(x)).join(', ')}}
+    <section class="search-result-drop" v-if="!dropAsName && data.drop"><i class="fa fa-gem fa-fw"></i> {{drop()}}</section>
+    <section class="search-result-equip" v-if="data.equip"><i class="fa fa-shield-alt fa-fw"></i> {{data.equip.map((x) => getName(x)).join(', ')}}</section>
+    <section class="search-result-location" v-if="data.location">
+      <i class="fas fa-fw fa-location-arrow" aria-hidden="true" style="color: honeydew"></i>
+      {{data.location}}
     </section>
     <section class="search-result-scale" v-if="data.scale === 0">
       <i class="fas fa-fw fa-ban" style="color:tomato"></i>
@@ -50,8 +50,10 @@
       <span v-if="data.sharp_weapon_judge_type == 3"><i class="fas fa-star fa-fw" style="color: #ffc700"></i> Minimum modifier tier: Yellow</span>
       <span v-if="data.sharp_weapon_judge_type == 4"><i class="far fa-star fa-fw" style="color: tomato"></i> No modifier</span>
     </section>
-    <section class="search-result-link" v-if="link">
-      <i class="fa fa-link fa-fw"></i> Link type: {{link.ltype}}
+    <section class="search-result-link" v-if="link"><i class="fa fa-link fa-fw"></i> Link type: {{link.ltype}}</section>
+    <section class="search-result-yahaha" v-if="data.korok_type">
+      <i class="fas fa-fw fa-leaf" style="color:lightgreen"></i>
+      {{data.korok_id}} - {{ data.korok_type }}
     </section>
   </div>
 </template>

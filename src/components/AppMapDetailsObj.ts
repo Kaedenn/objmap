@@ -12,6 +12,8 @@ import { MsgMgr } from '@/services/MsgMgr';
 import * as ui from '@/util/ui';
 const KUH_TAKKAR_ELEVATOR_HASH_ID = 0x96d181a0;
 
+import * as svg from '@/util/svg';
+
 enum MapLinkDefType {
   BasicSig = 0x0,
   AxisX = 0x1,
@@ -71,6 +73,7 @@ function isAreaObject(obj: ObjectMinData) {
 class StaticData {
   persistentAreaMarkers: L.Path[] = [];
   history: ObjectData[] = [];
+  persistentKorokMarkers: any[] = [];
 }
 
 const staticData = new StaticData();
@@ -94,6 +97,8 @@ export default class AppMapDetailsObj extends AppMapDetailsBase<MapMarkerObj | M
 
   private areaMarkers: L.Path[] = [];
   private staticData = staticData;
+
+  private korokMarkers: any[] = [];
 
   async init() {
     this.minObj = this.marker.data.obj;
@@ -128,10 +133,15 @@ export default class AppMapDetailsObj extends AppMapDetailsBase<MapMarkerObj | M
     this.isInvertedLogicTag = this.obj.name === 'LinkTagNAnd' || this.obj.name === 'LinkTagNOr';
 
     this.initAreaMarkers();
+
+    this.korokMarkers.forEach(m => m.remove());
+    this.korokMarkers = [];
+    this.initKorokMarkers();
   }
 
   beforeDestroy() {
     this.areaMarkers.forEach(m => m.remove());
+    this.korokMarkers.forEach(m => m.remove());
   }
 
   getLocationSub() {
@@ -415,4 +425,115 @@ export default class AppMapDetailsObj extends AppMapDetailsBase<MapMarkerObj | M
     }
     return "Normal";
   }
+
+  findItemByHash(group: any[], links: any[], name: string): any {
+    let hashes = links.map(link => link.DestUnitHashId);
+    let out = group.find(g => g.data.UnitConfigName == name && hashes.includes(g.hash_id));
+    return (out) ? out : null;
+  }
+
+  getNextFlowerInKorokFlowerTrail(group: any[], flower: any): any {
+    let or = this.findItemByHash(group, flower.data.LinksToObj, "LinkTagOr");
+    if (!or) {
+      return null;
+    }
+    let lag = this.findItemByHash(group, or.data.LinksToObj, "SwitchTimeLag");
+    if (!lag) {
+      return null;
+    }
+    let and = this.findItemByHash(group, lag.data.LinksToObj, "LinkTagAnd");
+    if (!and) {
+      return null;
+    }
+    let plant = this.findItemByHash(group, and.data.LinksToObj, "Obj_Plant_Korok_A_01");
+    return plant;
+  }
+
+  isLastFlowerInKorokFlowerTrail(flower: any): boolean {
+    return flower.data['!Parameters'].IsLastKorokFlower;
+  }
+
+  getFlowersInKorokFlowerTrail(group: any[], flower: any): any[] {
+    let flowers = [flower];
+    while (flower && !this.isLastFlowerInKorokFlowerTrail(flower)) {
+      let f = this.getNextFlowerInKorokFlowerTrail(group, flower);
+      flowers.push(f);
+      flower = f;
+    }
+    return flowers;
+  }
+
+  getKorokIcon(obj_name: string, style: string = "", text: string = ""): L.DivIcon {
+    let html = "";
+    let className = "";
+    if (obj_name == "FldObj_KorokStartingBlock_A_01") {
+      html = '<div class="stump"><i class="fa fa-leaf big-leaf"></i></div>';
+    } else if (obj_name == "FldObj_KorokGoal_A_01") {
+      html = svg.raceGoal;
+    } else if (obj_name == "Obj_Plant_Korok_A_01") {
+      html = `<div><i class="fa fa-leaf korokicon" style="${style}"></i>${text}</div>`;
+    }
+    return L.divIcon({
+      html: html, className: className, iconSize: [30, 30], iconAnchor: [15, 15],
+    });
+  }
+
+  getKorokMarkerWithIcon(obj: any, style: string = "", text: string = "") {
+    let icon = this.getKorokIcon(obj.data.UnitConfigName, style, text);
+    return L.marker([obj.data.Translate[2], obj.data.Translate[0]], { icon: icon });
+  }
+
+  initKorokMarkers() {
+    const use_icon = true;
+    let map = this.marker.data.mb;
+    if (this.obj && this.obj.korok_type == "Goal Ring (Race)") {
+      let names = ["FldObj_KorokStartingBlock_A_01", "FldObj_KorokGoal_A_01"];
+      let objs = this.genGroup.filter((obj: any) => names.includes(this.getName(obj.name)));
+      // Start and End Markers
+      let markers = objs.map((obj: any) => this.getKorokMarkerWithIcon(obj).addTo(map.m));
+      this.korokMarkers.push(...markers);
+
+      // Connecting Line
+      let ll = objs.map((obj: any) => [obj.data.Translate[2], obj.data.Translate[0]]);
+      let line = L.polyline(ll, { color: '#cccccc', weight: 1.5 }).addTo(map.m);
+      this.korokMarkers.push(line);
+    } else if (this.obj && this.obj.korok_type == "Flower Trail") {
+      let group = this.genGroup;
+      let start = group.find((g: any) => this.getName(g.name) == "Obj_Plant_Korok_A_01" &&
+        g.data['!Parameters'].IsNoAppearEffect);
+
+      let flowers = this.getFlowersInKorokFlowerTrail(group, start);
+      let style = "color: #E2DF41; font-size: 2em; display: inline;";
+      let style_end = "color: #eeeeee; font-size: 2em;  display: inline;";
+      flowers.forEach((obj: any, i: number) => {
+        let s = (i + 1 == flowers.length) ? style_end : style;
+        if (use_icon) {
+          let m = this.getKorokMarkerWithIcon(obj, s, `<span style="color: #ccc; font-size: 1.2em;">${i + 1}</span>`).addTo(map.m);
+          this.korokMarkers.push(m);
+        } else {
+          let m = L.marker([obj.data.Translate[2], obj.data.Translate[0]]).addTo(map.m);
+          this.korokMarkers.push(m);
+        }
+      });
+      let ll = flowers.map((obj: any) => {
+        let x = obj.data.Translate[0];
+        let z = obj.data.Translate[2];
+        return [z, x];
+      });
+      let line = L.polyline(ll, { color: "#cccccc", weight: 1.5 }).addTo(map.m);
+      this.korokMarkers.push(line);
+    }
+  }
+
+  keepKorokMarkersAlive() {
+    this.staticData.persistentKorokMarkers.push(... this.korokMarkers);
+    this.korokMarkers = [];
+  }
+
+  forgetPersistentKorokMarkers() {
+    let map = this.marker.data.mb;
+    this.staticData.persistentKorokMarkers.forEach(m => m.remove());
+    this.staticData.persistentKorokMarkers = [];
+  }
+
 }

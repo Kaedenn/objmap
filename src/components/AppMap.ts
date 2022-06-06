@@ -248,6 +248,7 @@ export default class AppMap extends mixins(MixinUtil) {
   private areaMapLayer = new ui.Unobservable(L.layerGroup());
   private areaMapLayersByData: ui.Unobservable<Map<any, L.Layer[]>> = new ui.Unobservable(new Map());
   private areaAutoItem = new ui.Unobservable(L.layerGroup());
+
   shownAreaMap = '';
   areaWhitelist = '';
   showKorokIDs = false;
@@ -259,6 +260,9 @@ export default class AppMap extends mixins(MixinUtil) {
 
   private mapSafeAreas = new ui.Unobservable(L.layerGroup());
   showSafeAreas = false;
+
+  private mapCastleAreas = new ui.Unobservable(L.layerGroup());
+  showCastleAreas = false;
 
   private tempObjMarker: ui.Unobservable<MapMarker> | null = null;
 
@@ -509,6 +513,17 @@ export default class AppMap extends mixins(MixinUtil) {
           calcLayerLength(layer);
           layerSetTooltip(layer);
         });
+      },
+      'draw:deleted': (e: any) => {
+        // Only use confirm dialog if editable layer is empty and
+        //   the layers passed are not empty
+        // A 'Save' action should have a possibly non-empty editable layer
+        if (this.drawLayer.getLayers().length == 0 && e.layers.getLayers().length != 0) {
+          let ans = confirm("Clear all map items?");
+          if (!ans) {
+            e.layers.eachLayer((layer: L.Marker | L.Polyline) => this.drawLayer.addLayer(layer));
+          }
+        }
       },
     });
     this.drawOnColorChange({});
@@ -999,6 +1014,11 @@ export default class AppMap extends mixins(MixinUtil) {
     this.areaMapLayersByData.data.clear();
     if (!name)
       return;
+    // Order matches that in MapTower.json
+    const mapTowerAreas = ["Hebra", "Tabantha", "Gerudo", "Wasteland",
+      "Woodland", "Central", "Great Plateau", "Dueling Peaks",
+      "Lake", "Eldin", "Akkala", "Lanayru", "Hateno",
+      "Faron", "Ridgeland"];
 
     const areas = await MapMgr.getInstance().fetchAreaMap(name);
     const entries = Object.entries(areas);
@@ -1015,7 +1035,8 @@ export default class AppMap extends mixins(MixinUtil) {
       });
       this.areaMapLayersByData.data.set(data, layers);
       for (const layer of layers) {
-        layer.bindTooltip('Area ' + data.toString());
+        let label = (name == "MapTower") ? mapTowerAreas[parseInt(data)] : 'Area ' + data.toString();
+        layer.bindTooltip(label);
         layer.on('mouseover', () => {
           layers.forEach(l => {
             l.setStyle({ weight: 4, fillOpacity: 0.3 });
@@ -1054,6 +1075,30 @@ export default class AppMap extends mixins(MixinUtil) {
     layers.forEach(l => this.mapSafeAreas.data.addLayer(l));
   }
 
+  async initMapCastleAreas() {
+    const areas: any = await MapMgr.getInstance().fetchAreaMap("castle");
+    const features = areas.features;
+
+    const layers: L.GeoJSON[] = features.map((feature: any, i: number) => {
+      let color = ui.genColor(300, feature.properties.y);
+      let layer = L.geoJSON(feature, {
+        style: function(_) {
+          return { weight: 2, fillOpacity: 0.2, color: color };
+        },
+        // @ts-ignore
+        contextmenu: true,
+      });
+      layer.bindTooltip(`${feature.properties.name} @ ${feature.properties.y}`);
+      layer.on('mouseover', () => { layer.setStyle({ weight: 4, fillOpacity: 0.3 }); });
+      layer.on('mouseout', () => { layer.setStyle({ weight: 2, fillOpacity: 0.2 }); });
+      return layer;
+    });
+    layers.forEach(l => this.mapCastleAreas.data.addLayer(l));
+
+    this.mapCastleAreas.data.setZIndex(1000);
+  }
+
+
   initMapUnitGrid() {
     for (let i = 0; i < 10; ++i) {
       for (let j = 0; j < 8; ++j) {
@@ -1083,6 +1128,18 @@ export default class AppMap extends mixins(MixinUtil) {
       this.mapUnitGrid.data.remove();
       if (this.showMapUnitGrid)
         this.mapUnitGrid.data.addTo(this.map.m);
+    });
+  }
+
+  onShowCastleAreas() {
+    this.$nextTick(() => {
+      this.mapCastleAreas.data.remove();
+      if (this.showCastleAreas) {
+        if (this.mapCastleAreas.data.getLayers().length <= 0) {
+          this.initMapCastleAreas();
+        }
+        this.mapCastleAreas.data.addTo(this.map.m);
+      }
     });
   }
 
